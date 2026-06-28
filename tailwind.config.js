@@ -1,0 +1,2 @@
+/** @type {import('tailwindcss').Config} */
+module.exports = { content: ['./pages/**/*.{js,ts,jsx,tsx,mdx}','./components/**/*.{js,ts,jsx,tsx,mdx}','./app/**/*.{js,ts,jsx,tsx,mdx}'], theme: { extend: { colors: { ketsal: { green: '#1B4332', 'green-light': '#2D6A4F', gold: '#D4A853', 'gold-light': '#F0C97A' } } } }, plugins: [] }

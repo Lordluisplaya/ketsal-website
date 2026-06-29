@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react'
 import PropertyCard from '@/components/PropertyCard'
 import { Search, SlidersHorizontal } from 'lucide-react'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyProp = Record<string, any>
 
 export default function PropiedadesPage() {
@@ -20,11 +19,15 @@ export default function PropiedadesPage() {
     if (zone) params.set('zone', zone)
     fetch(`/api/properties?${params}`)
       .then(r => r.json())
-      .then(d => { setProperties(d.properties || []); setLoading(false) })
+      .then(d => {
+        const arr = Array.isArray(d) ? d : (d.properties || [])
+        setProperties(arr.filter((p: AnyProp) => p.status === 'publicada'))
+        setLoading(false)
+      })
   }, [type, zone])
 
-  const filtered = properties.filter(p =>
-    !search || p.titulo?.toLowerCase().includes(search.toLowerCase()) || p.zona?.toLowerCase().includes(search.toLowerCase())
+  const filtered = properties.filter((p: AnyProp) =>
+    !search || p.title?.toLowerCase().includes(search.toLowerCase()) || p.zones?.name?.toLowerCase().includes(search.toLowerCase())
   )
 
   const BTN = 'px-4 py-2 rounded-lg font-brand font-600 text-xs uppercase tracking-wide border transition-all'
@@ -40,12 +43,8 @@ export default function PropiedadesPage() {
           <h1 className="font-brand font-800 text-4xl tracking-wide2 mb-6">Propiedades</h1>
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Buscar por nombre o zona..."
-              className="w-full bg-white/5 border border-white/10 text-white placeholder-white/30 rounded-xl py-3 pl-10 pr-4 text-sm focus:outline-none focus:border-ketsal-cobalt/50"
-            />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar por nombre o zona..."
+              className="w-full bg-white/5 border border-white/10 text-white placeholder-white/30 rounded-xl py-3 pl-10 pr-4 text-sm focus:outline-none focus:border-ketsal-cobalt/50" />
           </div>
         </div>
       </div>

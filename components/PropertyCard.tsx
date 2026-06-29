@@ -1,73 +1,53 @@
 import Link from 'next/link'
-import { Bed, Bath, Maximize, MapPin, Star } from 'lucide-react'
-import { Property } from '@/lib/types'
+import { MapPin, BedDouble, Bath, Maximize2 } from 'lucide-react'
 
-function formatPrice(price: number, currency: string, type: string, period?: string | null) {
-  const fmt = new Intl.NumberFormat('en-US', { style: 'currency', currency: currency === 'USD' ? 'USD' : 'MXN', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(price)
-  if (type === 'vacacional') return `${fmt}/noche`
-  if (type === 'renta') return `${fmt}/mes`
-  return fmt
+const BADGE: Record<string, string> = {
+  venta: 'bg-ketsal-cobalt text-white',
+  renta: 'bg-ketsal-navy text-white',
+  vacacional: 'bg-ketsal-gold text-ketsal-black',
 }
+const PRICE_LABEL: Record<string, string> = { mes: '/mes', noche: '/noche' }
 
-const BADGE: Record<string,{label:string,bg:string,text:string}> = {
-  venta:      { label: 'VENTA',      bg: '#1A1AE0', text: 'white' },
-  renta:      { label: 'RENTA',      bg: '#0A0A3E', text: 'white' },
-  vacacional: { label: 'VACACIONAL', bg: '#D4AF6A', text: '#03030F' },
-}
+export default function PropertyCard({ property: p }: { property: Record<string, any> }) {
+  const price = p.price ? `$${Number(p.price).toLocaleString()} ${p.currency || 'USD'}${PRICE_LABEL[p.price_period] || ''}` : null
+  const badgeClass = BADGE[p.type] || 'bg-white/20 text-white'
+  const isGold = p.type === 'vacacional'
 
-const PRICE_COLOR: Record<string,string> = {
-  venta: '#1A1AE0',
-  renta: '#1A1AE0',
-  vacacional: '#A8843E',
-}
-
-const CARD_BG: Record<string,string> = {
-  venta:      'linear-gradient(135deg,#1A1AE0 0%,#0A0A3E 100%)',
-  renta:      'linear-gradient(135deg,#0A0A3E 0%,#03030F 100%)',
-  vacacional: 'linear-gradient(135deg,#D4AF6A 0%,#A8843E 100%)',
-}
-
-export default function PropertyCard({ property }: { property: Property }) {
-  const badge = BADGE[property.type]
   return (
-    <Link href={`/propiedades/${property.id}`} className="group block">
-      <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-xl hover:shadow-ketsal-cobalt/10 transition-all duration-300 hover:-translate-y-1">
-        <div className="relative aspect-[4/3] overflow-hidden" style={{background: property.cover_photo ? undefined : CARD_BG[property.type]}}>
-          {property.cover_photo
-            ? <img src={property.cover_photo} alt={property.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-            : <div className="w-full h-full flex items-center justify-center opacity-30">
-                <MapPin className="w-10 h-10 text-white" />
-              </div>
+    <Link href={`/propiedades/${p.id}`}>
+      <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-xl hover:shadow-ketsal-cobalt/5 transition-all group cursor-pointer">
+        {/* Image */}
+        <div className={`relative h-52 ${!p.cover_photo ? (p.type === 'venta' ? 'gradient-hero' : p.type === 'renta' ? 'bg-ketsal-navy' : 'bg-ketsal-gold') : ''}`}>
+          {p.cover_photo
+            ? <img src={p.cover_photo} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+            : <div className="absolute inset-0 flex items-center justify-center opacity-20"><Maximize2 className="w-12 h-12 text-white" /></div>
           }
-          <div className="absolute top-3 left-3 flex gap-2">
-            <span className="font-brand text-[10px] font-700 px-2.5 py-1 rounded tracking-wide" style={{background:badge.bg, color:badge.text}}>
-              {badge.label}
+          <span className={`absolute top-3 left-3 text-[10px] font-brand font-700 uppercase tracking-[0.2em] px-2.5 py-1 rounded-full ${badgeClass}`}>
+            {p.type}
+          </span>
+          {p.featured && (
+            <span className="absolute top-3 right-3 text-[10px] font-brand font-600 uppercase tracking-wide bg-black/50 text-white px-2 py-0.5 rounded-full">
+              Destacada
             </span>
-            {property.featured && (
-              <span className="font-brand text-[10px] font-700 px-2.5 py-1 rounded tracking-wide flex items-center gap-1" style={{background:'#03030F',color:'#D4AF6A'}}>
-                <Star className="w-2.5 h-2.5" /> TOP
-              </span>
-            )}
-          </div>
+          )}
         </div>
-        <div className="p-4">
-          <p className="text-xs text-gray-400 mb-1.5 flex items-center gap-1">
-            <MapPin className="w-3 h-3" />{property.zone_name || 'Riviera Maya'}{property.zone_city ? `, ${property.zone_city}` : ''}
-          </p>
-          <h3 className="font-medium text-gray-900 mb-3 line-clamp-2 group-hover:text-ketsal-cobalt transition-colors text-sm leading-snug">
-            {property.title}
-          </h3>
-          <div className="flex items-center gap-4 text-xs text-gray-400 mb-3">
-            {!!property.bedrooms && property.bedrooms > 0 && <span className="flex items-center gap-1"><Bed className="w-3.5 h-3.5" />{property.bedrooms} rec</span>}
-            {!!property.bathrooms && property.bathrooms > 0 && <span className="flex items-center gap-1"><Bath className="w-3.5 h-3.5" />{property.bathrooms} baños</span>}
-            {!!property.area_sqm && <span className="flex items-center gap-1"><Maximize className="w-3.5 h-3.5" />{property.area_sqm}m²</span>}
-          </div>
-          <div className="flex items-end justify-between pt-3 border-t border-gray-50">
-            <p className="text-lg font-bold" style={{color: PRICE_COLOR[property.type]}}>
-              {formatPrice(property.price, property.currency, property.type, property.price_period)}
+        {/* Content */}
+        <div className="p-5">
+          <h3 className="font-brand font-700 text-sm text-ketsal-black mb-1.5 leading-snug tracking-wide2 line-clamp-2">{p.title}</h3>
+          {(p.zone_name || p.neighborhood) && (
+            <p className="flex items-center gap-1 text-[11px] text-gray-400 mb-3">
+              <MapPin className="w-3 h-3 flex-shrink-0" />
+              {p.zone_name || p.neighborhood}
             </p>
-            <span className="text-[10px] text-gray-300 capitalize font-brand tracking-wide">{property.property_kind}</span>
+          )}
+          <div className="flex items-center gap-3 text-[11px] text-gray-300 mb-4">
+            {p.bedrooms > 0 && <span className="flex items-center gap-1"><BedDouble className="w-3.5 h-3.5" />{p.bedrooms}</span>}
+            {p.bathrooms > 0 && <span className="flex items-center gap-1"><Bath className="w-3.5 h-3.5" />{p.bathrooms}</span>}
+            {p.area_sqm > 0 && <span className="flex items-center gap-1"><Maximize2 className="w-3.5 h-3.5" />{p.area_sqm} m²</span>}
           </div>
+          {price && (
+            <p className={`font-brand font-800 text-base ${isGold ? 'text-amber-600' : 'text-ketsal-cobalt'}`}>{price}</p>
+          )}
         </div>
       </div>
     </Link>

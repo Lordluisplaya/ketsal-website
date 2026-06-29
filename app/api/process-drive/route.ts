@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
     if (photos.length > 0) {
       const thumbnailContent = photos.slice(0, 20).map((f: DriveFile) => ({
         type: 'image',
-        source: { type: 'base64', media_type: 'image/jpeg', data: f.thumbnail },
+        source: { type: 'base64', media_type: (f.mimeType?.startsWith('image/') ? f.mimeType : 'image/jpeg') as 'image/jpeg' | 'image/webp' | 'image/png' | 'image/gif', data: f.thumbnail },
       }))
 
       const rankingPrompt = `Analiza estas ${photos.slice(0, 20).length} fotos de una propiedad inmobiliaria y devuelve un JSON con el análisis de cada foto EN EL MISMO ORDEN que las recibiste.
@@ -176,7 +176,6 @@ Responde SOLO con este JSON:
           })
           photoRankings.forEach((r, i) => { r.order = i })
         } catch {
-          // If ranking fails, use simple ordering
           photoRankings = photos.slice(0, 20).map((f: DriveFile, i: number) => ({
             id: f.id, name: f.name, category: 'otro' as const,
             coverScore: 0, order: i, isCover: i === 0,
@@ -185,7 +184,6 @@ Responde SOLO con este JSON:
       }
     }
 
-    // ── PASS 2: Deep extraction from top 8 high-res photos ───────────────────
     const topPhotoIds = photoRankings.slice(0, 8).map(r => r.id)
     const topPhotos = files.filter((f: DriveFile) => topPhotoIds.includes(f.id) && f.full)
 
@@ -194,7 +192,7 @@ Responde SOLO con este JSON:
     if (topPhotos.length > 0) {
       const fullContent = topPhotos.map((f: DriveFile) => ({
         type: 'image',
-        source: { type: 'base64', media_type: 'image/jpeg', data: f.full },
+        source: { type: 'base64', media_type: (f.mimeType?.startsWith('image/') ? f.mimeType : 'image/jpeg') as 'image/jpeg' | 'image/webp' | 'image/png' | 'image/gif', data: f.full },
       }))
 
       const whatsappContext = whatsappText
@@ -205,38 +203,26 @@ Responde SOLO con este JSON:
 
 Devuelve SOLO este JSON (sin texto adicional):
 {
-  "title": "Nombre descriptivo y atractivo (ej: Departamento Amueblado en Aldea Zamá)",
+  "title": "Nombre descriptivo y atractivo",
   "type": "renta|venta|vacacional",
   "property_kind": "departamento|casa|villa|studio|terreno|local|oficina|penthouse",
-  "bedrooms": número (0 si es studio),
-  "bathrooms": número,
-  "area_sqm": número o null,
-  "price": número o null (si lo ves o está en el texto de WhatsApp),
+  "bedrooms": numero,
+  "bathrooms": numero,
+  "area_sqm": numero o null,
+  "price": numero o null,
   "price_period": "mes|noche|null",
   "description": "Descripción atractiva en español de 3-4 oraciones",
-  "amenities": {
-    "pool": boolean,
-    "parking": boolean,
-    "ocean_view": boolean,
-    "pet_friendly": boolean,
-    "furnished": boolean,
-    "gym": boolean,
-    "beach_access": boolean,
-    "rooftop": boolean,
-    "security": boolean
-  },
+  "amenities": {"pool": bool, "parking": bool, "ocean_view": bool, "pet_friendly": bool, "furnished": bool, "gym": bool, "beach_access": bool, "rooftop": bool, "security": bool},
   "condition": "excelente|bueno|regular",
-  "contact_whatsapp": "número si está en el texto o en alguna imagen, sino null",
-  "contact_name": "nombre del agente/dueño si aparece, sino null",
-  "address": "dirección si es visible, sino null",
-  "neighborhood": "colonia/fraccionamiento si es visible (ej: Aldea Zamá, Playacar), sino null",
-  "price_hint": "precio exacto si aparece en algún lado, sino null",
-  "notes": "observaciones relevantes: materiales, acabados, vista, orientación, etc."
+  "contact_whatsapp": null,
+  "contact_name": null,
+  "address": null,
+  "neighborhood": null,
+  "price_hint": null,
+  "notes": "observaciones"
 }
 
-Folder: ${folderName || 'sin nombre'}
-Videos en la carpeta: ${videos.length}
-Documentos en la carpeta: ${documents.length}`
+Folder: ${folderName || 'sin nombre'}`
 
       const extractRes = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
@@ -270,47 +256,24 @@ Documentos en la carpeta: ${documents.length}`
       }
     }
 
-    // ── Build response ─────────────────────────────────────────────────────────
     const coverPhoto = photoRankings.find(r => r.isCover)
     const orderedPhotos = photoRankings.map(r => ({
-      id: r.id,
-      name: r.name,
-      category: r.category,
-      order: r.order,
-      isCover: r.isCover,
+      id: r.id, name: r.name, category: r.category, order: r.order, isCover: r.isCover,
       url: `https://drive.google.com/thumbnail?id=${r.id}&sz=w1200`,
       thumbnail: `https://drive.google.com/thumbnail?id=${r.id}&sz=w400`,
     }))
 
     return NextResponse.json({
-      success: true,
-      folderName,
-      folderUrl,
-      summary: {
-        totalFiles: files.length,
-        photos: photos.length,
-        videos: videos.length,
-        documents: documents.length,
-      },
+      success: true, folderName, folderUrl,
+      summary: { totalFiles: files.length, photos: photos.length, videos: videos.length, documents: documents.length },
       coverPhoto: coverPhoto ? {
-        id: coverPhoto.id,
-        url: `https://drive.google.com/thumbnail?id=${coverPhoto.id}&sz=w1200`,
-        category: coverPhoto.category,
-        score: coverPhoto.coverScore,
+        id: coverPhoto.id, url: `https://drive.google.com/thumbnail?id=${coverPhoto.id}&sz=w1200`,
+        category: coverPhoto.category, score: coverPhoto.coverScore,
       } : null,
       orderedPhotos,
-      videos: videos.map((f: DriveFile) => ({
-        id: f.id,
-        name: f.name,
-        mimeType: f.mimeType,
-      })),
-      documents: documents.map((f: DriveFile) => ({
-        id: f.id,
-        name: f.name,
-        mimeType: f.mimeType,
-      })),
+      videos: videos.map((f: DriveFile) => ({ id: f.id, name: f.name, mimeType: f.mimeType })),
+      documents: documents.map((f: DriveFile) => ({ id: f.id, name: f.name, mimeType: f.mimeType })),
       extractedData: extracted,
-      // Ready-to-insert Supabase record
       propertyRecord: extracted ? {
         title: extracted.title || folderName || 'Sin título',
         type: extracted.type || 'renta',
@@ -338,13 +301,7 @@ Documentos en la carpeta: ${documents.length}`
         source: 'drive',
         source_url: folderUrl || null,
         source_group: folderName || null,
-        source_raw: {
-          whatsappText: whatsappText || null,
-          price_hint: extracted.price_hint || null,
-          notes: extracted.notes || null,
-          videosCount: videos.length,
-          documentsCount: documents.length,
-        },
+        source_raw: { whatsappText: whatsappText || null, price_hint: extracted.price_hint || null, notes: extracted.notes || null, videosCount: videos.length, documentsCount: documents.length },
       } : null,
     }, { headers: CORS_HEADERS })
 

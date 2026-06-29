@@ -15,24 +15,20 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { id } = params
-
-  // Get property
   const { data: property, error } = await supabase
     .from('v_properties_public')
     .select('*')
-    .eq('id', id)
+    .eq('id', params.id)
     .single()
 
   if (error || !property) {
-    return NextResponse.json({ error: 'Propiedad no encontrada' }, { status: 404, headers: CORS })
+    return NextResponse.json({ error: 'Property not found' }, { status: 404, headers: CORS })
   }
 
-  // Get all photos
   const { data: photos } = await supabase
     .from('property_photos')
     .select('id, url, is_cover, sort_order')
-    .eq('property_id', id)
+    .eq('property_id', params.id)
     .order('sort_order', { ascending: true })
 
   return NextResponse.json({ ...property, photos: photos || [] }, { headers: CORS })

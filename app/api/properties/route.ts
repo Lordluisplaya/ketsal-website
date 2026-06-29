@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
   let query = supabase
     .from('v_properties_public')
     .select('*')
-    .order('created_at', { ascending: false })
+    .order('id', { ascending: false })
 
   if (tipo) query = query.eq('type', tipo)
   if (kind) query = query.eq('property_kind', kind)

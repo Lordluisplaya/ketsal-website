@@ -3,8 +3,11 @@ import { useState, useEffect } from 'react'
 import PropertyCard from '@/components/PropertyCard'
 import { Search, SlidersHorizontal } from 'lucide-react'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyProp = Record<string, any>
+
 export default function PropiedadesPage() {
-  const [properties, setProperties] = useState([])
+  const [properties, setProperties] = useState<AnyProp[]>([])
   const [loading, setLoading] = useState(true)
   const [type, setType] = useState('')
   const [zone, setZone] = useState('')
@@ -25,13 +28,12 @@ export default function PropiedadesPage() {
   )
 
   const BTN = 'px-4 py-2 rounded-lg font-brand font-600 text-xs uppercase tracking-wide border transition-all'
-  const active = (val, cur) => val === cur
+  const active = (val: string, cur: string) => val === cur
     ? `${BTN} bg-ketsal-cobalt text-white border-ketsal-cobalt`
     : `${BTN} bg-white text-ketsal-black/60 border-gray-200 hover:border-ketsal-cobalt/40 hover:text-ketsal-cobalt`
 
   return (
     <div className="min-h-screen bg-ketsal-surface">
-      {/* Header */}
       <div className="gradient-hero text-white py-14 px-4">
         <div className="max-w-7xl mx-auto">
           <p className="font-brand text-xs text-ketsal-cobalt-light tracking-[0.3em] uppercase mb-3">Catálogo completo</p>
@@ -48,7 +50,6 @@ export default function PropiedadesPage() {
         </div>
       </div>
 
-      {/* Filters */}
       <div className="bg-white border-b border-gray-100 px-4 py-4 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto flex flex-wrap gap-3 items-center">
           <SlidersHorizontal className="w-4 h-4 text-gray-300" />
@@ -71,7 +72,6 @@ export default function PropiedadesPage() {
         </div>
       </div>
 
-      {/* Grid */}
       <div className="max-w-7xl mx-auto px-4 py-10">
         {loading ? (
           <div className="flex items-center justify-center py-20">
@@ -85,7 +85,7 @@ export default function PropiedadesPage() {
           <>
             <p className="text-xs text-gray-400 font-brand mb-6 uppercase tracking-wide">{filtered.length} propiedades</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filtered.map(p => <PropertyCard key={p.id} property={p} />)}
+              {filtered.map((p: AnyProp) => <PropertyCard key={p.id} property={p} />)}
             </div>
           </>
         )}

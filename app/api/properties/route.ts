@@ -1,23 +1,35 @@
-import { NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase'
+import { NextRequest, NextResponse } from 'next/server'
+import { supabase } from '@/lib/supabase'
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url)
-  const supabase = createAdminClient()
-  let q = supabase.from('properties').select('*, zones(name,slug,city)').order('created_at', { ascending: false })
-  const status = searchParams.get('status')
-  if (status) q = q.eq('status', status)
-  const { data, error } = await q.limit(100)
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data)
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
 }
 
-export async function PATCH(request: Request) {
-  const { id, status } = await request.json()
-  const supabase = createAdminClient()
-  const update: Record<string, unknown> = { status }
-  if (status === 'publicada') update.published_at = new Date().toISOString()
-  const { data, error } = await supabase.from('properties').update(update).eq('id', id).select().single()
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data)
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: CORS })
+}
+
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url)
+  const tipo = searchParams.get('tipo')
+  const kind = searchParams.get('kind')
+
+  let query = supabase
+    .from('v_properties_public')
+    .select('*')
+    .order('created_at', { ascending: false })
+
+  if (tipo) query = query.eq('type', tipo)
+  if (kind) query = query.eq('property_kind', kind)
+
+  const { data, error } = await query
+
+  if (error) {
+    console.error('Properties API error:', error)
+    return NextResponse.json({ error: error.message }, { status: 500, headers: CORS })
+  }
+
+  return NextResponse.json(data || [], { headers: CORS })
 }

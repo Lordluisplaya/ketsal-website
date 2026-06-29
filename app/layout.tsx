@@ -1,23 +1,27 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import Header from '@/components/Header'
-import Footer from '@/components/Footer'
-import ChatWidget from '@/components/ChatWidget'
 
 export const metadata: Metadata = {
-  title: 'Ketsal Real Estate | Propiedades en Riviera Maya',
-  description: 'Encuentra tu propiedad ideal en Playa del Carmen, Tulum y Riviera Maya.',
+  title: 'Ketsal — Propiedades en la Riviera Maya',
+  description: 'Encuentra tu propiedad ideal en la Riviera Maya. Departamentos, casas, villas y terrenos en Playa del Carmen, Tulum y más.',
+  keywords: 'bienes raíces, Riviera Maya, Playa del Carmen, Tulum, propiedades, renta, venta',
+  openGraph: {
+    title: 'Ketsal — Propiedades en la Riviera Maya',
+    description: 'Las mejores propiedades en la Riviera Maya',
+    type: 'website',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es">
-      <body className="min-h-screen flex flex-col bg-white">
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
-        <ChatWidget />
-      </body>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </head>
+      <body>{children}</body>
     </html>
   )
 }

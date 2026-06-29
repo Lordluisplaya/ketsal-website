@@ -1,38 +1,30 @@
-export type PropertyType = 'venta' | 'renta' | 'vacacional'
-export type PropertyKind = 'departamento' | 'casa' | 'villa' | 'terreno' | 'local' | 'oficina' | 'studio' | 'penthouse'
-
 export interface Property {
   id: string
   title: string
-  description?: string
-  type: PropertyType
-  property_kind?: PropertyKind
-  status: string
-  price: number
-  currency: 'USD' | 'MXN'
-  price_period?: string | null
-  bedrooms?: number
-  bathrooms?: number
-  area_sqm?: number
-  furnished?: boolean
-  pool?: boolean
-  parking?: boolean
-  gym?: boolean
-  security?: boolean
-  rooftop?: boolean
-  pet_friendly?: boolean
-  ocean_view?: boolean
-  beach_access?: boolean
-  zone_id?: string
-  zone_name?: string
-  zone_slug?: string
-  zone_city?: string
-  contact_name?: string
-  contact_phone?: string
-  contact_whatsapp?: string
-  source?: string
-  featured?: boolean
-  published_at?: string
-  cover_photo?: string
-  created_at?: string
+  type: 'venta' | 'renta' | 'vacacional'
+  property_kind: 'departamento' | 'casa' | 'villa' | 'terreno' | 'local' | 'oficina' | 'studio' | 'penthouse'
+  bedrooms: number | null
+  bathrooms: number | null
+  area_sqm: number | null
+  price: number | null
+  price_period: string | null
+  price_note: string | null
+  description: string | null
+  cover_photo: string | null
+  neighborhood: string | null
+  address: string | null
+  pool: boolean
+  parking: boolean
+  ocean_view: boolean
+  pet_friendly: boolean
+  furnished: boolean
+  gym: boolean
+  beach_access: boolean
+  rooftop: boolean
+  security: boolean
+  contact_whatsapp: string | null
+  contact_name: string | null
+  status: 'pendiente' | 'publicada' | 'rechazada'
+  created_at: string
+  photos?: { id: string; url: string; is_cover: boolean; sort_order: number }[]
 }

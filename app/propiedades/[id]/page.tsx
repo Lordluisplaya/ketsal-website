@@ -9,7 +9,9 @@ async function getProperty(id: string) {
   return data
 }
 
-const BADGE = {
+type TipoOperacion = 'venta' | 'renta' | 'vacacional'
+
+const BADGE: Record<TipoOperacion, string> = {
   venta: 'bg-ketsal-cobalt text-white',
   renta: 'bg-ketsal-navy text-white',
   vacacional: 'bg-ketsal-gold text-ketsal-black',
@@ -19,9 +21,10 @@ export default async function PropertyPage({ params }: { params: { id: string } 
   const p = await getProperty(params.id)
   if (!p) notFound()
 
+  const tipo = (p.tipo_operacion as TipoOperacion) || 'venta'
   const imgs = p.imagenes_urls?.length ? p.imagenes_urls : [null]
   const price = p.precio
-    ? p.tipo_operacion === 'vacacional'
+    ? tipo === 'vacacional'
       ? `$${Number(p.precio).toLocaleString()} / noche`
       : `$${Number(p.precio).toLocaleString()} USD`
     : null
@@ -45,8 +48,8 @@ export default async function PropertyPage({ params }: { params: { id: string } 
           <div className="absolute inset-0 opacity-20" style={{backgroundImage:'radial-gradient(circle at 50% 50%, #1A1AE0 0%, transparent 60%)'}} />
         )}
         <div className="relative z-10 text-center px-4">
-          <span className={`inline-block text-[10px] font-brand font-700 uppercase tracking-[0.2em] px-3 py-1 rounded-full mb-4 ${BADGE[p.tipo_operacion] || 'bg-white/20 text-white'}`}>
-            {p.tipo_operacion}
+          <span className={`inline-block text-[10px] font-brand font-700 uppercase tracking-[0.2em] px-3 py-1 rounded-full mb-4 ${BADGE[tipo] || 'bg-white/20 text-white'}`}>
+            {tipo}
           </span>
           <h1 className="font-brand font-800 text-3xl sm:text-4xl text-white mb-2 tracking-wide2">{p.titulo}</h1>
           {p.zona && (
@@ -60,7 +63,6 @@ export default async function PropertyPage({ params }: { params: { id: string } 
       <div className="max-w-6xl mx-auto px-4 py-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Images */}
           {imgs.length > 1 && (
             <div className="grid grid-cols-3 gap-2">
               {imgs.slice(1,4).map((src: string, i: number) => (
@@ -71,7 +73,6 @@ export default async function PropertyPage({ params }: { params: { id: string } 
             </div>
           )}
 
-          {/* Details */}
           <div className="bg-white rounded-2xl p-8 border border-gray-100">
             <h2 className="font-brand font-700 text-sm uppercase tracking-wide text-ketsal-black/40 mb-4">Detalles</h2>
             <div className="flex flex-wrap gap-6 mb-6">
@@ -82,7 +83,6 @@ export default async function PropertyPage({ params }: { params: { id: string } 
             {p.descripcion && <p className="text-gray-500 text-sm leading-relaxed">{p.descripcion}</p>}
           </div>
 
-          {/* Chat */}
           <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
             <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-50">
               <MessageSquare className="w-4 h-4 text-ketsal-cobalt" />
@@ -98,7 +98,7 @@ export default async function PropertyPage({ params }: { params: { id: string } 
             {price && (
               <div className="mb-4">
                 <p className="text-xs font-brand text-white/30 uppercase tracking-wide mb-1">Precio</p>
-                <p className={`font-brand font-800 text-2xl ${p.tipo_operacion === 'vacacional' ? 'text-ketsal-gold' : 'text-ketsal-cobalt-light'}`}>{price}</p>
+                <p className={`font-brand font-800 text-2xl ${tipo === 'vacacional' ? 'text-ketsal-gold' : 'text-ketsal-cobalt-light'}`}>{price}</p>
               </div>
             )}
             <a href={`https://wa.me/529841234567?text=Hola%2C%20me%20interesa%20la%20propiedad%3A%20${encodeURIComponent(p.titulo || '')}`}

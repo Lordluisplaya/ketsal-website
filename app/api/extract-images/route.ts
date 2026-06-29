@@ -1,5 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: CORS_HEADERS })
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { images, folderName } = await request.json()
@@ -72,7 +82,7 @@ Responde SOLO con el JSON, sin texto adicional.`
 
     if (!response.ok) {
       const err = await response.text()
-      return NextResponse.json({ error: `Anthropic error: ${err}` }, { status: 500 })
+      return NextResponse.json({ error: `Anthropic error: ${err}` }, { status: 500, headers: CORS_HEADERS })
     }
 
     const data = await response.json()
@@ -87,9 +97,9 @@ Responde SOLO con el JSON, sin texto adicional.`
       extracted = { raw: text }
     }
 
-    return NextResponse.json({ success: true, data: extracted })
+    return NextResponse.json({ success: true, data: extracted }, { headers: CORS_HEADERS })
   } catch (error) {
     console.error('Extract error:', error)
-    return NextResponse.json({ error: String(error) }, { status: 500 })
+    return NextResponse.json({ error: String(error) }, { status: 500, headers: CORS_HEADERS })
   }
 }

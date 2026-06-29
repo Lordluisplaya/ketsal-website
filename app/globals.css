@@ -2,8 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap');
 
+* { box-sizing: border-box; }
 body { font-family: 'Inter', sans-serif; }
 
-.gradient-hero { background: linear-gradient(135deg, #1B4332 0%, #2D6A4F 50%, #081C15 100%); }
+.font-brand { font-family: 'Montserrat', sans-serif; }
+
+.gradient-hero {
+  background: linear-gradient(135deg, #000000 0%, #03030F 25%, #0A0A3E 65%, #1A1AE0 100%);
+}
+.gradient-card-venta { background: linear-gradient(135deg, #1A1AE0, #0A0A3E); }
+.gradient-card-renta { background: linear-gradient(135deg, #0A0A3E, #03030F); }
+.gradient-card-vacacional { background: linear-gradient(135deg, #D4AF6A, #A8843E); }
+
+.text-gradient-cobalt {
+  background: linear-gradient(90deg, #6B6BFF, #1A1AE0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}

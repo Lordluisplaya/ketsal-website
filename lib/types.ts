@@ -24,6 +24,7 @@ export interface Property {
   security: boolean
   contact_whatsapp: string | null
   contact_name: string | null
+  source_group: string | null
   status: 'pendiente' | 'publicada' | 'rechazada'
   created_at: string
   photos?: { id: string; url: string; is_cover: boolean; sort_order: number }[]
